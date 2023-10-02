@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+option go_package = "./proto";
+//定義Service名稱，
+service NoticeService {
+  //定義api名稱，傳入參數與回傳值
+  rpc Connect(userId) returns (stream notice) {}
+}
+
+//傳入參數的spec
+message userId { string userId = 1; }
+
+//回傳值的spec
+message notice {
+  int64 channelId = 1;
+  string msg = 2;
+}
