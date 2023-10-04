@@ -7,6 +7,7 @@ const socketUrl = "ws://127.0.0.1:1234";
 
 export default function TodoList() {
   const [list, setList] = useState<string[]>([]);
+  const [input, setInput] = useState<string>("");
   const {
     sendMessage,
     sendJsonMessage,
@@ -27,9 +28,10 @@ export default function TodoList() {
 
   return (
     <div className={styles.description}>
+      <input value={input} onChange={(e) => setInput(e.target.value)}></input>
       <button
         onClick={async () => {
-          sendMessage("add item");
+          sendMessage(input || "add item");
         }}
       >
         clink me to add item
