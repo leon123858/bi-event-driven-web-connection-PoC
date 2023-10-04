@@ -16,6 +16,7 @@ type DB struct {
 }
 
 type TodoItem struct {
+	ID          string `firestore:"id,omitempty"`
 	Name        string `firestore:"name"`
 	Description string `firestore:"description"`
 	Completed   bool   `firestore:"completed"`
@@ -61,11 +62,15 @@ func (db *DB) RemoveTodoItem(id string) error {
 	return nil
 }
 
-func (db *DB) SetTodoItem(id string, name, description string, completed bool) error {
-	_, err := db.Client.Collection("todoList").Doc(id).Set(db.Ctx, TodoItem{
-		Name:        name,
-		Description: description,
-		Completed:   completed,
+func (db *DB) SetTodoItem(id string, description string, completed bool) error {
+	_, err := db.Client.Collection("todoList").Doc(id).Update(db.Ctx, []firestore.Update{
+		{
+			Path:  "description",
+			Value: description,
+		}, {
+			Path:  "completed",
+			Value: completed,
+		},
 	})
 	if err != nil {
 		log.Printf("Failed to set item with ID %s: %v", id, err)
@@ -88,6 +93,7 @@ func (db *DB) GetTodoList(name string) (*[]TodoItem, error) {
 		}
 		// convert firestore item  to TodoItem
 		newItem := TodoItem{
+			ID:          doc.Ref.ID,
 			Name:        doc.Data()["name"].(string),
 			Description: doc.Data()["description"].(string),
 			Completed:   doc.Data()["completed"].(bool),

@@ -34,6 +34,37 @@ func NewPubSub(projectId string) (*PubSubInfo, error) {
 	}, nil
 }
 
+// create topic when not exists
+func (info *PubSubInfo) CreateTopic(topicId string) error {
+	topic := info.Client.Topic(topicId)
+	exists, err := topic.Exists(info.Ctx)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		_, err := info.Client.CreateTopic(info.Ctx, topicId)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// remove topic when exists
+func (info *PubSubInfo) RemoveTopic(topicId string) error {
+	topic := info.Client.Topic(topicId)
+	exists, err := topic.Exists(info.Ctx)
+	if err != nil {
+		return err
+	}
+	if exists {
+		if err := topic.Delete(info.Ctx); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (info *PubSubInfo) PublishNotice(channelId int64, userId, message string) error {
 	// Get a topic reference.
 	topic := info.Client.Topic("notice-" + fmt.Sprint(channelId))

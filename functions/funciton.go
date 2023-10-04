@@ -66,7 +66,26 @@ type Request struct {
 	UserId      string `json:"userId"`
 	ID          string `json:"id"`
 	Description string `json:"description"`
-	Completed   bool   `json:"completed"`
+	Completed   *bool  `json:"completed"`
+}
+
+type Response struct {
+	Result bool        `json:"result"`
+	Type   string      `json:"type"`
+	Data   interface{} `json:"data"`
+}
+
+func publishResponse(funcName string, req Request, data interface{}) error {
+	jsonBytes, err := json.Marshal(Response{Result: true, Type: funcName, Data: data})
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	println(string(jsonBytes))
+	if err := messageQueue.PublishNotice(req.ChannelId, req.UserId, string(jsonBytes)); err != nil {
+		return err
+	}
+	return nil
 }
 
 func getTodoList(ctx context.Context, e event.Event) error {
@@ -89,15 +108,8 @@ func getTodoList(ctx context.Context, e event.Event) error {
 		return err
 	}
 
-	// Convert the array of structs to a JSON string.
-	jsonBytes, err := json.Marshal(list)
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-
 	// publish to pubsub
-	if err := messageQueue.PublishNotice(data.ChannelId, data.UserId, string(jsonBytes)); err != nil {
+	if err := publishResponse("getTodoList", data, *list); err != nil {
 		return err
 	}
 
@@ -119,7 +131,12 @@ func addTodoItem(ctx context.Context, e event.Event) error {
 		return errors.New("bad request")
 	}
 
-	if err := db.AddTodoItem(data.Name, data.Description, data.Completed); err != nil {
+	if err := db.AddTodoItem(data.Name, data.Description, *data.Completed); err != nil {
+		return err
+	}
+
+	// publish to pubsub
+	if err := publishResponse("addTodoItem", data, ""); err != nil {
 		return err
 	}
 
@@ -132,11 +149,23 @@ func removeTodoItem(ctx context.Context, e event.Event) error {
 		return fmt.Errorf("event.DataAs: %w", err)
 	}
 
-	name := string(msg.Message.Data) // Automatically decoded from base64.
-	if name == "" {
-		name = "World"
+	dataBuffer := string(msg.Message.Data) // Automatically decoded from base64.
+	data := Request{}
+	if err := json.Unmarshal([]byte(dataBuffer), &data); err != nil {
+		return err
 	}
-	log.Printf("Hello, %s!", name)
+	if data.ChannelId == 0 || data.UserId == "" || data.ID == "" {
+		return errors.New("bad request")
+	}
+	if err := db.RemoveTodoItem(data.ID); err != nil {
+		return err
+	}
+
+	// publish to pubsub
+	if err := publishResponse("removeTodoItem", data, ""); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -146,10 +175,23 @@ func updateTodoItem(ctx context.Context, e event.Event) error {
 		return fmt.Errorf("event.DataAs: %w", err)
 	}
 
-	name := string(msg.Message.Data) // Automatically decoded from base64.
-	if name == "" {
-		name = "World"
+	dataBuffer := string(msg.Message.Data) // Automatically decoded from base64.
+	data := Request{}
+	if err := json.Unmarshal([]byte(dataBuffer), &data); err != nil {
+		return err
 	}
-	log.Printf("Hello, %s!", name)
+	if data.ChannelId == 0 || data.UserId == "" || data.ID == "" || data.Description == "" || data.Completed == nil {
+		return errors.New("bad request")
+	}
+
+	if err := db.SetTodoItem(data.ID, data.Description, *data.Completed); err != nil {
+		return err
+	}
+
+	// publish to pubsub
+	if err := publishResponse("updateTodoItem", data, ""); err != nil {
+		return err
+	}
+
 	return nil
 }
