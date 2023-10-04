@@ -1,32 +1,52 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/leon123858/terroform-sample/docker-http/pubsub"
 )
 
-// key is channel id, value is todo list
-// sample data: {"1": ["todo1", "todo2"]}
-var mockDb = map[string][]string{}
+var methodList = []string{
+	"get-todo-list",
+	"add-todo-item",
+	"remove-todo-item",
+	"update-todo-item",
+}
 
 func main() {
 	e := echo.New()
+
+	// init pubsub client
+	pubsubInfo, err := pubsub.NewPubSub("tw-rd-ca-leon-lin")
+	if err != nil {
+		panic(err)
+	}
 
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, World!")
 	})
 
-	e.GET("/all", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, mockDb)
-	})
+	e.POST("/call/:method", func(c echo.Context) error {
+		method := c.Param("method")
+		if !pubsub.Contains(methodList, method) {
+			return c.JSON(http.StatusBadRequest, map[string]string{"status": "fail"})
+		}
 
-	// add todo to channel,
-	// query sample: http://localhost:8080/add?channelId=1&todoMsg=todo1
-	e.GET("/add", func(c echo.Context) error {
-		channelId := c.QueryParam("channelId")
-		todoMsg := c.QueryParam("todoMsg")
-		mockDb[channelId] = append(mockDb[channelId], todoMsg)
+		req := new(pubsub.Request)
+		if err := c.Bind(req); err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"status": "fail"})
+		}
+
+		// print json
+		fmt.Printf("%+v\n", req)
+
+		err = pubsubInfo.Publish2Topic(method, *req)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"status": "fail"})
+		}
+
 		return c.JSON(http.StatusOK, map[string]string{"status": "success"})
 	})
 

@@ -10,6 +10,7 @@ test:
 	export FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 && export PUBSUB_EMULATOR_HOST=localhost:8085 && go test -v ./...
 
 emulater:
+	# can use kill -9 $(pidof java) to kill them
 	# execute 2 commands below parallel
 	make -j 2 emulater-pubsub emulater-firestore
 emulater-pubsub:
