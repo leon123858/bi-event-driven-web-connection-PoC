@@ -23,6 +23,7 @@ func init() {
 	functions.CloudEvent("GetTodoList", getTodoList)
 	functions.CloudEvent("AddTodoItem", addTodoItem)
 	functions.CloudEvent("RemoveTodoItem", removeTodoItem)
+	functions.CloudEvent("UpdateTodoItem", updateTodoItem)
 
 	// create golang wait group
 	var wg sync.WaitGroup
