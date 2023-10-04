@@ -2,7 +2,6 @@
   "name": "event-driven",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -13,7 +12,8 @@
   "dependencies": {
     "next": "latest",
     "react": "latest",
-    "react-dom": "latest"
+    "react-dom": "latest",
+    "react-use-websocket": "^4.5.0"
   },
   "devDependencies": {
     "@types/node": "latest",
