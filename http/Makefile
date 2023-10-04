@@ -10,12 +10,14 @@ BINARY_NAME=todoList
 all: 
 	make format
 	make clean 
-	make build
+	go run main.go
+	
+build:
+	make format
+	make clean 
+	$(GOBUILD) -o $(BINARY_NAME) -v
 	echo "preview on http://localhost:8080"
 	./$(BINARY_NAME)
-
-build:
-	$(GOBUILD) -o $(BINARY_NAME) -v
 
 clean:
 	$(GOCLEAN)
