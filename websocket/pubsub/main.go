@@ -11,7 +11,7 @@ import (
 
 type PubSubInfo struct {
 	ProjectID string
-	ChannelId int64
+	ChannelId string
 	TopicID   string
 	SubID     string
 	Topic     *pubsub.Topic
@@ -36,8 +36,8 @@ func byteSliceToJSON(data []byte) (*Notice, error) {
 }
 
 func (info *PubSubInfo) createTopic(client *pubsub.Client, ctx context.Context) error {
-	info.ChannelId = time.Now().UnixNano()
-	info.TopicID = "notice-" + fmt.Sprint(info.ChannelId)
+	info.ChannelId = fmt.Sprint(time.Now().UnixNano())
+	info.TopicID = "notice-" + info.ChannelId
 	topic, err := client.CreateTopic(ctx, info.TopicID)
 	if err != nil {
 		return err
@@ -47,7 +47,7 @@ func (info *PubSubInfo) createTopic(client *pubsub.Client, ctx context.Context) 
 }
 
 func (info *PubSubInfo) createSub(client *pubsub.Client, ctx context.Context) error {
-	info.SubID = "notice-sub-" + fmt.Sprint(info.ChannelId)
+	info.SubID = "notice-sub-" + info.ChannelId
 	sub, err := client.CreateSubscription(ctx, info.SubID, pubsub.SubscriptionConfig{
 		Topic:       info.Topic,
 		AckDeadline: 20 * time.Second,

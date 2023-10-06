@@ -3,7 +3,6 @@ package pubsub
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"cloud.google.com/go/pubsub"
 )
@@ -65,9 +64,9 @@ func (info *PubSubInfo) RemoveTopic(topicId string) error {
 	return nil
 }
 
-func (info *PubSubInfo) PublishNotice(channelId int64, userId, message string) error {
+func (info *PubSubInfo) PublishNotice(channelId string, userId, message string) error {
 	// Get a topic reference.
-	topic := info.Client.Topic("notice-" + fmt.Sprint(channelId))
+	topic := info.Client.Topic("notice-" + channelId)
 
 	// create bytes[] from Notice struct
 	notice := Notice{

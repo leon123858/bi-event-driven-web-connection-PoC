@@ -1,0 +1,16 @@
+{
+  "configurations": [
+    {
+      "name": "Deploy Cloud Function",
+      "type": "cloudcode.cloudfunctions",
+      "request": "launch",
+      "functionName": "get-todo-list",
+      "gen": "GEN_2",
+      "revision": "get-todo-list-00001-zan",
+      "entryPoint": "GetTodoList",
+      "testInput": "",
+      "region": "asia-east1",
+      "runtime": "go121"
+    }
+  ]
+}

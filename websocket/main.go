@@ -17,12 +17,12 @@ type NoticeRequest struct {
 }
 
 type NoticeResponse struct {
-	ChannelId int64  `json:"channelId"`
+	ChannelId string `json:"channelId"`
 	Msg       string `json:"msg"`
 }
 
 var projectID = "tw-rd-ca-leon-lin"
-var channelId int64
+var channelId string
 var noticesChannel = make(map[string](chan pubsub.Notice))
 
 func connect(ws *websocket.Conn) {

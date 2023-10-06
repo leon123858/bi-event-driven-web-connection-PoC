@@ -15,7 +15,7 @@ type PubSubInfo struct {
 
 type Request struct {
 	Name        *string `json:"name"`
-	ChannelId   int64   `json:"channelId"`
+	ChannelId   string  `json:"channelId"`
 	UserId      string  `json:"userId"`
 	ID          *string `json:"id"`
 	Description *string `json:"description"`

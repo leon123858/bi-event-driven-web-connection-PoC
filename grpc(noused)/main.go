@@ -17,7 +17,7 @@ var ProjectID = "tw-rd-ca-leon-lin"
 type NoticeService struct {
 	pb.UnsafeNoticeServiceServer
 	// custom local variable
-	ChannelId      int64
+	ChannelId      string
 	noticesChannel *map[string](chan Notice)
 }
 

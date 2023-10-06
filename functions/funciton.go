@@ -63,7 +63,7 @@ type PubSubMessage struct {
 
 type Request struct {
 	Name        string `json:"name"`
-	ChannelId   int64  `json:"channelId"`
+	ChannelId   string `json:"channelId"`
 	UserId      string `json:"userId"`
 	ID          string `json:"id"`
 	Description string `json:"description"`
@@ -100,10 +100,9 @@ func getTodoList(ctx context.Context, e event.Event) error {
 	if err := json.Unmarshal([]byte(dataBuffer), &data); err != nil {
 		return err
 	}
-	if data.Name == "" || data.ChannelId == 0 || data.UserId == "" {
+	if data.Name == "" || data.ChannelId == "" || data.UserId == "" {
 		return errors.New("bad request")
 	}
-
 	list, err := db.GetTodoList(data.Name)
 	if err != nil {
 		return err
@@ -128,7 +127,7 @@ func addTodoItem(ctx context.Context, e event.Event) error {
 	if err := json.Unmarshal([]byte(dataBuffer), &data); err != nil {
 		return err
 	}
-	if data.Name == "" || data.ChannelId == 0 || data.UserId == "" {
+	if data.Name == "" || data.ChannelId == "" || data.UserId == "" {
 		return errors.New("bad request")
 	}
 
@@ -155,7 +154,7 @@ func removeTodoItem(ctx context.Context, e event.Event) error {
 	if err := json.Unmarshal([]byte(dataBuffer), &data); err != nil {
 		return err
 	}
-	if data.ChannelId == 0 || data.UserId == "" || data.ID == "" {
+	if data.ChannelId == "" || data.UserId == "" || data.ID == "" {
 		return errors.New("bad request")
 	}
 	if err := db.RemoveTodoItem(data.ID); err != nil {
@@ -181,7 +180,7 @@ func updateTodoItem(ctx context.Context, e event.Event) error {
 	if err := json.Unmarshal([]byte(dataBuffer), &data); err != nil {
 		return err
 	}
-	if data.ChannelId == 0 || data.UserId == "" || data.ID == "" || data.Description == "" || data.Completed == nil {
+	if data.ChannelId == "" || data.UserId == "" || data.ID == "" || data.Description == "" || data.Completed == nil {
 		return errors.New("bad request")
 	}
 

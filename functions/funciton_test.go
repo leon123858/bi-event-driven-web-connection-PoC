@@ -43,7 +43,7 @@ func Test_getTodoList(t *testing.T) {
 	}{
 		{"basic", args{context.Background(), Request{
 			Name:      "test",
-			ChannelId: int64(1),
+			ChannelId: "1",
 			UserId:    "test",
 		}}, false},
 	}
@@ -87,13 +87,13 @@ func Test_addTodoItem(t *testing.T) {
 	}{
 		{"basic", args{context.Background(), Request{
 			Name:        "test",
-			ChannelId:   int64(1),
+			ChannelId:   "1",
 			UserId:      "test",
 			Description: "test",
 			Completed:   ptrBool,
 		}}, false}, {"basic", args{context.Background(), Request{
 			Name:        "test",
-			ChannelId:   int64(1),
+			ChannelId:   "1",
 			UserId:      "test2",
 			Description: "test2",
 			Completed:   ptrBool,
@@ -140,12 +140,12 @@ func Test_removeTodoItem(t *testing.T) {
 	}{
 		{"basic", args{context.Background(), Request{
 			Name:        "test",
-			ChannelId:   int64(1),
+			ChannelId:   "1",
 			UserId:      "test",
 			Description: "test",
 		}}, true}, {"basic", args{context.Background(), Request{
 			Name:      "test",
-			ChannelId: int64(1),
+			ChannelId: "1",
 			UserId:    "test",
 			ID:        (*list)[0].ID,
 		}}, false},
@@ -202,12 +202,12 @@ func Test_updateTodoItem(t *testing.T) {
 		wantErr bool
 	}{
 		{"basic", args{context.Background(), Request{
-			ChannelId:   int64(1),
+			ChannelId:   "1",
 			UserId:      "test",
 			ID:          (*list)[0].ID,
 			Description: "new description",
 		}}, true}, {"basic", args{context.Background(), Request{
-			ChannelId:   int64(1),
+			ChannelId:   "1",
 			UserId:      "test",
 			ID:          (*list)[0].ID,
 			Description: "new description",
