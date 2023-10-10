@@ -1,23 +1,25 @@
-module "global_var" {
-  source = "../global_setting"
-}
+resource "google_cloudbuild_trigger" "manual-trigger" {
+  location = var.region
+  name     = "${var.name}-trigger"
 
-resource "google_cloud_run_v2_service" "default" {
-  name     = "cloudrun-service"
-  location = module.global_var.region
-  ingress  = "INGRESS_TRAFFIC_ALL"
+  source_to_build {
+    repository = var.source_repo
+    ref        = "refs/heads/main"
+    repo_type  = "GITHUB"
+  }
 
-  template {
-    containers {
-      image = "us-docker.pkg.dev/cloudrun/container/hello"
+  build {
+    step {
+      name = "gcr.io/google.com/cloudsdktool/cloud-sdk"
+      args = ["gcloud", "functions", "deploy", "${var.name}", "--gen2", "--runtime=go121",
+        "--region=${var.region}", "--source=${var.function_path}",
+      "--trigger-topic=${var.trigger_topic}", "--entry-point=${var.entry_point}"]
     }
   }
-}
 
-resource "google_cloud_run_service_iam_member" "member" {
-  location = google_cloud_run_v2_service.default.location
-  project  = google_cloud_run_v2_service.default.project
-  service  = google_cloud_run_v2_service.default.name
-  role     = "roles/run.invoker"
-  member   = "allUsers"
+  // If this is set on a build, it will become pending when it is run, 
+  // and will need to be explicitly approved to start.
+  approval_config {
+    approval_required = false
+  }
 }

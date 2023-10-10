@@ -1,17 +1,24 @@
-variable "service_name" {
-  description = "The name of cloud run"
+variable "name" {
+  description = "value of the name of the builder"
   type        = string
-  default     = "docker-sample"
 }
 variable "region" {
-  description = "The region of cloud run"
+  description = "value of the region of the builder"
   type        = string
 }
-variable "run-sa" {
-  description = "The service account that cloud run used"
+variable "source_repo" {
+  description = "value of the source_repo of the builder"
   type        = string
 }
-variable "db-name" {
-  description = "The name of db"
+variable "function_path" {
+  description = "value of the function_path of the builder"
+  type        = string
+}
+variable "trigger_topic" {
+  description = "value of the trigger_topic of the builder"
+  type        = string
+}
+variable "entry_point" {
+  description = "value of the entry_point of the builder"
   type        = string
 }

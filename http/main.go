@@ -11,10 +11,10 @@ import (
 )
 
 var methodList = []string{
-	"get-todo-list",
-	"add-todo-item",
-	"remove-todo-item",
-	"update-todo-item",
+	"get-todolist-topic",
+	"update-todolist-topic",
+	"create_todolist-topic",
+	"delete_todolist-topic",
 }
 
 func main() {

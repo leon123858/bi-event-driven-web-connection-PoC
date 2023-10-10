@@ -1,9 +1,9 @@
 output "http-url" {
-  value = module.http-server.url
+  value = module.http_server.url
 }
 output "websocket-url" {
-  value = module.websocket-server.url
+  value = module.websocket_server.url
 }
 output "web-url" {
-  value = module.web-server.url
+  value = module.web_server.url
 }

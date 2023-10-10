@@ -38,9 +38,9 @@ func NewDB(projectID string, ctx context.Context) (*DB, error) {
 	}, nil
 }
 
-func (db *DB) AddTodoItem(name, description string, completed bool) error {
+func (db *DB) AddTodoItem(name, description string, completed bool) (string,error) {
 	now := time.Now().UnixMicro()
-	_, _, err := db.Client.Collection("todoList").Add(db.Ctx, &TodoItem{
+	ref, _, err := db.Client.Collection("todoList").Add(db.Ctx, &TodoItem{
 		Name:        name,
 		Description: description,
 		Completed:   completed,
@@ -48,21 +48,21 @@ func (db *DB) AddTodoItem(name, description string, completed bool) error {
 	})
 	if err != nil {
 		log.Printf("Failed adding item: %v", err)
-		return err
+		return "",err
 	}
-	return nil
+	return  ref.ID,nil
 }
 
-func (db *DB) RemoveTodoItem(id string) error {
+func (db *DB) RemoveTodoItem(id string) (string,error) {
 	_, err := db.Client.Collection("todoList").Doc(id).Delete(db.Ctx)
 	if err != nil {
 		log.Printf("Failed to delete item with ID %s: %v", id, err)
-		return err
+		return "",err
 	}
-	return nil
+	return id,nil
 }
 
-func (db *DB) SetTodoItem(id string, description string, completed bool) error {
+func (db *DB) SetTodoItem(id string, description string, completed bool) (string,error) {
 	_, err := db.Client.Collection("todoList").Doc(id).Update(db.Ctx, []firestore.Update{
 		{
 			Path:  "description",
@@ -74,9 +74,9 @@ func (db *DB) SetTodoItem(id string, description string, completed bool) error {
 	})
 	if err != nil {
 		log.Printf("Failed to set item with ID %s: %v", id, err)
-		return err
+		return "", err
 	}
-	return nil
+	return id, nil
 }
 
 func (db *DB) GetTodoList(name string) (*[]TodoItem, error) {

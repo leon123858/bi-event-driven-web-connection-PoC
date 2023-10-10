@@ -10,6 +10,7 @@ import (
 
 	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
 	"github.com/cloudevents/sdk-go/v2/event"
+
 	"github.com/leon123858/bi-event-driven-web-connection-PoC/functions/database"
 	"github.com/leon123858/bi-event-driven-web-connection-PoC/functions/pubsub"
 )
@@ -131,12 +132,13 @@ func addTodoItem(ctx context.Context, e event.Event) error {
 		return errors.New("bad request")
 	}
 
-	if err := db.AddTodoItem(data.Name, data.Description, *data.Completed); err != nil {
+	docId,err := db.AddTodoItem(data.Name, data.Description, *data.Completed);
+	if  err != nil {
 		return err
 	}
 
 	// publish to pubsub
-	if err := publishResponse("addTodoItem", data, ""); err != nil {
+	if err := publishResponse("addTodoItem", data, docId); err != nil {
 		return err
 	}
 
@@ -157,12 +159,14 @@ func removeTodoItem(ctx context.Context, e event.Event) error {
 	if data.ChannelId == "" || data.UserId == "" || data.ID == "" {
 		return errors.New("bad request")
 	}
-	if err := db.RemoveTodoItem(data.ID); err != nil {
+
+	id,err := db.RemoveTodoItem(data.ID)
+	if ; err != nil {
 		return err
 	}
 
 	// publish to pubsub
-	if err := publishResponse("removeTodoItem", data, ""); err != nil {
+	if err := publishResponse("removeTodoItem", data, id); err != nil {
 		return err
 	}
 
@@ -183,13 +187,14 @@ func updateTodoItem(ctx context.Context, e event.Event) error {
 	if data.ChannelId == "" || data.UserId == "" || data.ID == "" || data.Description == "" || data.Completed == nil {
 		return errors.New("bad request")
 	}
-
-	if err := db.SetTodoItem(data.ID, data.Description, *data.Completed); err != nil {
+	
+	id, err := db.SetTodoItem(data.ID, data.Description, *data.Completed)
+	if ; err != nil {
 		return err
 	}
 
 	// publish to pubsub
-	if err := publishResponse("updateTodoItem", data, ""); err != nil {
+	if err := publishResponse("updateTodoItem", data, id); err != nil {
 		return err
 	}
 
