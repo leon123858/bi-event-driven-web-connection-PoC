@@ -13,8 +13,8 @@ import (
 var methodList = []string{
 	"get-todolist-topic",
 	"update-todolist-topic",
-	"create_todolist-topic",
-	"delete_todolist-topic",
+	"create-todolist-topic",
+	"delete-todolist-topic",
 }
 
 func main() {
