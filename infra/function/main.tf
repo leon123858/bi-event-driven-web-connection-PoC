@@ -1,23 +1,41 @@
-module "global_var" {
-  source = "../global_setting"
+resource "google_pubsub_topic" "default" {
+  name = "${var.service_name}-topic"
 }
 
-resource "google_cloud_run_v2_service" "default" {
-  name     = "cloudrun-service"
-  location = module.global_var.region
-  ingress  = "INGRESS_TRAFFIC_ALL"
+resource "google_storage_bucket_object" "object" {
+  name   = "${var.service_name}-source.zip"
+  bucket = var.bucket_name
+  source = "${path.module}/default-source.zip" # Add path to the zipped function source code
+}
 
-  template {
-    containers {
-      image = "us-docker.pkg.dev/cloudrun/container/hello"
+resource "google_cloudfunctions2_function" "default" {
+  name        = var.service_name
+  location    = var.region
+  description = "a default function"
+
+  build_config {
+    runtime     = "go119"
+    entry_point = "HelloPubSub" # Set the entry point
+    source {
+      storage_source {
+        bucket = var.bucket_name
+        object = google_storage_bucket_object.object.name
+      }
     }
   }
-}
 
-resource "google_cloud_run_service_iam_member" "member" {
-  location = google_cloud_run_v2_service.default.location
-  project  = google_cloud_run_v2_service.default.project
-  service  = google_cloud_run_v2_service.default.name
-  role     = "roles/run.invoker"
-  member   = "allUsers"
+  service_config {
+    max_instance_count             = 3
+    min_instance_count             = 0
+    timeout_seconds                = 60
+    ingress_settings               = "ALLOW_INTERNAL_ONLY"
+    all_traffic_on_latest_revision = true
+  }
+
+  event_trigger {
+    trigger_region = var.region
+    event_type     = "google.cloud.pubsub.topic.v1.messagePublished"
+    pubsub_topic   = google_pubsub_topic.default.id
+    retry_policy   = "RETRY_POLICY_DO_NOT_RETRY"
+  }
 }

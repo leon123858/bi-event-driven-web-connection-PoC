@@ -1,17 +1,20 @@
-variable "service_name" {
-  description = "The name of cloud run"
+variable "name" {
+  description = "The name for repo"
   type        = string
-  default     = "docker-sample"
 }
 variable "region" {
-  description = "The region of cloud run"
+  default = "place replica secret"
+  type    = string
+}
+variable "git_token" {
+  description = "The key to access github repo. should have  repo and read:user permission, when code in org should have read:org permission optionally"
   type        = string
 }
-variable "run-sa" {
-  description = "The service account that cloud run used"
+variable "git_app_id" {
+  description = "id of the github app in repo. can find here https://github.com/settings/installations/<id>"
   type        = string
 }
-variable "db-name" {
-  description = "The name of db"
+variable "git_url" {
+  description = "url of the github repo"
   type        = string
 }

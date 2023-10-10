@@ -7,11 +7,7 @@ variable "region" {
   description = "The region of cloud run"
   type        = string
 }
-variable "run-sa" {
-  description = "The service account that cloud run used"
-  type        = string
-}
-variable "db-name" {
-  description = "The name of db"
+variable "bucket_name" {
+  description = "value of bucket name save function source"
   type        = string
 }
