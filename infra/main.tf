@@ -134,7 +134,7 @@ module "build_get_todolist" {
   region       = var.region
   function_path = "./functions"
   trigger_topic = module.get_todolist.topic
-  entry_point   = "GetTodolist"
+  entry_point   = "GetTodoList"
   source_repo   = module.repository.id
 }
 module "build_create_todolist" {

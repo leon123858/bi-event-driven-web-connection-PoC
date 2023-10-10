@@ -99,7 +99,7 @@ export default function TodoList() {
 					onClick={async () => {
 						// create item http request
 						if (channelId !== '') {
-							fetch(`${httpUrl}/create_todolist-topic`, {
+							fetch(`${httpUrl}/create-todolist-topic`, {
 								method: 'POST',
 								headers: {
 									'Content-Type': 'application/json',
