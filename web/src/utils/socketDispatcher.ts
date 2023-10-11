@@ -11,11 +11,11 @@ const dispatcher = (message: string) => {
     case "addTodoItem":
       emitter.emit("add-item", data.data);
       break;
-    case "editTodoItem":
+    case "updateTodoItem":
       emitter.emit("edit-item", data.data);
       break;
     default:
-      alert("Error: unknown message type" + data.type);
+      alert("Error: unknown message type " + data.type);
       break;
   }
 };

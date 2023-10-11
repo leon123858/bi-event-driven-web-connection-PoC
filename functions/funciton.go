@@ -185,7 +185,6 @@ func updateTodoItem(ctx context.Context, e event.Event) error {
 		return err
 	}
 	if data.ChannelId == "" || data.UserId == "" || data.ID == "" || data.Description == "" || data.Completed == nil {
-		println(data.ChannelId, data.UserId, data.ID, data.Description, data.Completed)
 		return errors.New("bad request")
 	}
 

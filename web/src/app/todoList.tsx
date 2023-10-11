@@ -155,7 +155,7 @@ export default function TodoList() {
                   item.ID,
                   channelId,
                   basicData,
-                  input,
+                  item.Description,
                   !item.Completed,
                   async () => {
                     setList([
