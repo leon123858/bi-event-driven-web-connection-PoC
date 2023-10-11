@@ -1,10 +1,9 @@
-import TodoList from './todoList';
-import styles from './page.module.css';
+import TodoList from "./todoList";
 
 export default function Home() {
-	return (
-		<main className={styles.main}>
-			<TodoList />
-		</main>
-	);
+  return (
+    <main>
+      <TodoList />
+    </main>
+  );
 }

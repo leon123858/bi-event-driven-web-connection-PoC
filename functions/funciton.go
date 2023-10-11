@@ -132,8 +132,8 @@ func addTodoItem(ctx context.Context, e event.Event) error {
 		return errors.New("bad request")
 	}
 
-	docId,err := db.AddTodoItem(data.Name, data.Description, *data.Completed);
-	if  err != nil {
+	docId, err := db.AddTodoItem(data.Name, data.Description, *data.Completed)
+	if err != nil {
 		return err
 	}
 
@@ -160,8 +160,8 @@ func removeTodoItem(ctx context.Context, e event.Event) error {
 		return errors.New("bad request")
 	}
 
-	id,err := db.RemoveTodoItem(data.ID)
-	if ; err != nil {
+	id, err := db.RemoveTodoItem(data.ID)
+	if err != nil {
 		return err
 	}
 
@@ -185,11 +185,12 @@ func updateTodoItem(ctx context.Context, e event.Event) error {
 		return err
 	}
 	if data.ChannelId == "" || data.UserId == "" || data.ID == "" || data.Description == "" || data.Completed == nil {
+		println(data.ChannelId, data.UserId, data.ID, data.Description, data.Completed)
 		return errors.New("bad request")
 	}
-	
+
 	id, err := db.SetTodoItem(data.ID, data.Description, *data.Completed)
-	if ; err != nil {
+	if err != nil {
 		return err
 	}
 

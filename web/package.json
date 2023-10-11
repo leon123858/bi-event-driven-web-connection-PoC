@@ -10,6 +10,7 @@
     "test": "node --loader tsx --test ./test/*.ts"
   },
   "dependencies": {
+    "antd": "^5.10.0",
     "fbemitter": "^3.0.0",
     "next": "latest",
     "react": "latest",

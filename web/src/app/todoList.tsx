@@ -1,146 +1,197 @@
-'use client';
-import useWebSocket from 'react-use-websocket';
-import styles from './page.module.css';
-import { useState } from 'react';
-import { EventEmitter, EventSubscription } from 'fbemitter';
+"use client";
+import useWebSocket from "react-use-websocket";
+import { useState } from "react";
+import Container from "@/components/MiddleContainer";
+import ConfigForm from "@/components/ConfigForm";
+import React from "react";
+import {
+  TodoItem,
+  addTodoItem,
+  editTodoItem,
+  getTodoList,
+} from "@/utils/httpRequester";
+import useConfigHook from "@/utils/configHook";
+import {
+  dispatcher,
+  listener,
+  listenerWithTimeout,
+} from "@/utils/socketDispatcher";
+import { Button, Checkbox, Input, List, Typography } from "antd";
 
-const socketUrl = 'wss://websocket-kt6w747drq-de.a.run.app';
-const httpUrl = 'https://http-kt6w747drq-de.a.run.app/call';
+const defaultProp = {
+  customBackendUrl: "default" as "default" | "custom",
+  listName: "test",
+  userName: "default",
+  socketUrl: "wss://websocket-kt6w747drq-de.a.run.app",
+  httpUrl: "https://http-kt6w747drq-de.a.run.app/call",
+};
 
 export default function TodoList() {
-	let emitter = new EventEmitter();
-	const [list, setList] = useState<string[]>([]);
-	const [input, setInput] = useState<string>('');
-	const [listName, setListName] = useState<string>('test');
-	const [userId, setUserId] = useState<string>('default');
-	const [channelId, setChannelId] = useState<string>('');
-	const {
-		sendMessage,
-		sendJsonMessage,
-		lastMessage,
-		lastJsonMessage,
-		readyState,
-		getWebSocket,
-	} = useWebSocket(socketUrl, {
-		onOpen: () => {
-			console.log('opened');
-			sendJsonMessage({ userId: userId });
-		},
-		onClose: (e) => console.log('closed: ' + e.reason),
-		onMessage: (e) => {
-			const data: {
-				channelId: string;
-				msg: string;
-			} = JSON.parse(e.data);
-			setChannelId(data.channelId);
-			// console.log(data);
-			if (data.msg === '') {
-				const body = {
-					name: listName,
-					channelId: data.channelId,
-					userId: userId,
-				};
-				// get list http request
-				fetch(`${httpUrl}/get-todolist-topic`, {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify(body),
-				})
-					.then((response) => response.json())
-					.then((data) => {
-						console.log('Success:', data);
-					})
-					.catch((error) => {
-						console.error('Error:', error);
-					});
-				return;
-			} else {
-				const msg = JSON.parse(data.msg);
-				console.log(msg.data);
-				switch (msg.type) {
-					case 'getTodoList':
-						setList(msg.data.map((v: any) => v.Name + ': ' + v.Description));
-						break;
-					case 'addTodoItem':
-						if (msg.result) {
-							emitter.emit('add-item', '');
-						} else {
-							alert('add item failed');
-						}
-						break;
-				}
-			}
-		},
-		//Will attempt to reconnect on all close events, such as server shutting down
-		shouldReconnect: (closeEvent) => true,
-	});
+  const [list, setList] = useState<TodoItem[]>([]);
+  const [input, setInput] = useState<string>("");
+  const {
+    socketUrl,
+    basicData,
+    channelId,
+    setBasicData,
+    setSocketUrl,
+    setChannelId,
+  } = useConfigHook(defaultProp);
 
-	return (
-		<>
-			<input
-				value={listName}
-				placeholder='list name'
-				onChange={(e) => setListName(e.target.value)}
-			></input>
-			<input
-				value={userId}
-				placeholder='user id'
-				onChange={(e) => setUserId(e.target.value)}
-			></input>
-			<div className={styles.description}>
-				<input
-					value={input}
-					placeholder='item content'
-					onChange={(e) => setInput(e.target.value)}
-				></input>
-				<button
-					onClick={async () => {
-						// create item http request
-						if (channelId !== '') {
-							fetch(`${httpUrl}/create-todolist-topic`, {
-								method: 'POST',
-								headers: {
-									'Content-Type': 'application/json',
-								},
-								body: JSON.stringify({
-									name: listName,
-									channelId: channelId,
-									userId: userId,
-									description: input,
-									completed: false,
-								}),
-							})
-								.then((response) => response.json())
-								.then((data) => {
-									let token: EventSubscription;
-									const t = setTimeout(() => {
-										token.remove(); // 5 seconds later, remove the listener
-										alert('add item timeout');
-									}, 5000);
-									token = emitter.once('add-item', (data: any) => {
-										clearTimeout(t);
-										alert('add item success');
-										setList((list) => [`${listName}: ${input}`, ...list]);
-									});
-								})
-								.catch((error) => {
-									console.error('Error:', error);
-								});
-						} else {
-							alert('should not connect to server');
-						}
-					}}
-				>
-					clink me to add item
-				</button>
-				<div>
-					{list.map((v, i) => {
-						return <p key={i}>{v}</p>;
-					})}
-				</div>
-			</div>
-		</>
-	);
+  listener("get-item", (data: TodoItem[]) => {
+    setList([
+      ...data.map((v) => {
+        return {
+          Completed: v.Completed,
+          Description: v.Description,
+          ID: v.ID,
+          Name: v.Name,
+        };
+      }),
+    ]);
+  });
+
+  const { sendJsonMessage } = useWebSocket(socketUrl, {
+    onOpen: () => {
+      console.log("opened");
+      sendJsonMessage({ userId: basicData.userName });
+    },
+    onClose: (e) => console.log("closed: " + e.reason),
+    onMessage: async (e) => {
+      const data: {
+        channelId: string;
+        msg: string;
+      } = JSON.parse(e.data);
+      setChannelId(data.channelId);
+      if (data.msg === "") {
+        // first round response protocol
+        await getTodoList(data.channelId, basicData);
+        return;
+      } else {
+        dispatcher(data.msg);
+      }
+    },
+    //Will attempt to reconnect on all close events, such as server shutting down
+    shouldReconnect: (closeEvent) => true,
+  });
+
+  return (
+    <>
+      <Container style={{ width: "100%", height: "10vh" }}>
+        <h1>High Concurrency TodoList Demo</h1>
+      </Container>
+
+      <Container style={{ width: "100%", height: "50vh" }}>
+        <ConfigForm
+          defaultValue={defaultProp}
+          connectCallback={(values: any) => {
+            setBasicData({
+              listName: values.listName,
+              userName: values.userName,
+              httpUrl: values.httpUrl,
+            });
+            setSocketUrl(values.socketUrl);
+          }}
+        ></ConfigForm>
+      </Container>
+
+      <Container style={{ width: "100%" }}>
+        <List
+          header={
+            <>
+              <Input
+                style={{ backgroundColor: "gray" }}
+                value={input}
+                onChange={(e) => setInput(e.currentTarget.value)}
+              ></Input>
+              <Button
+                style={{ width: "100%" }}
+                onClick={async () => {
+                  await addTodoItem(channelId, basicData, input, () => {
+                    const tmpId = Math.random().toString(36).substr(2, 9);
+                    setInput("");
+                    setList([
+                      {
+                        ID: tmpId,
+                        Name: basicData.listName,
+                        Description: input,
+                        Completed: false,
+                      },
+                      ...list,
+                    ]);
+                    listenerWithTimeout(
+                      "add-item",
+                      () => {
+                        setList([...list.filter((item) => item.ID !== tmpId)]);
+                        console.error("add item timeout");
+                      },
+                      (id: string) => {
+                        setList([
+                          {
+                            ID: id,
+                            Name: basicData.listName,
+                            Description: input,
+                            Completed: false,
+                          },
+                          ...list.filter((item) => item.ID !== tmpId),
+                        ]);
+                        console.log("add item success");
+                      }
+                    );
+                  });
+                }}
+              >
+                Add Item
+              </Button>
+            </>
+          }
+          bordered
+          dataSource={list}
+          renderItem={(item) => (
+            <List.Item
+              style={{ color: "wheat", border: "1px solid gray" }}
+              onClick={async () => {
+                await editTodoItem(
+                  item.ID,
+                  channelId,
+                  basicData,
+                  input,
+                  !item.Completed,
+                  async () => {
+                    setList([
+                      ...list.map((v) => {
+                        if (v.ID === item.ID) {
+                          v.Completed = !item.Completed;
+                        }
+                        return v;
+                      }),
+                    ]);
+                    listenerWithTimeout(
+                      "edit-item",
+                      () => {
+                        setList([
+                          ...list.map((v) => {
+                            if (v.ID === item.ID) {
+                              v.Completed = !v.Completed;
+                            }
+                            return v;
+                          }),
+                        ]);
+                        console.error("edit item timeout");
+                      },
+                      () => {
+                        console.log("edit item success");
+                      }
+                    );
+                  }
+                );
+              }}
+            >
+              <Checkbox checked={item.Completed}></Checkbox> {item.Description}
+            </List.Item>
+          )}
+        />
+      </Container>
+    </>
+  );
 }
