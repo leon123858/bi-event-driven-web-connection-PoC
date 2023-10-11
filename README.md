@@ -5,9 +5,3 @@ a PoC that use websocket and react event emitter to let developer can use event 
 ## Arch
 
 ![image](./doc/bi-event-driven.drawio.png)
-
-## TODO
-
-1. add event 要回傳 id 才可以實作刪除
-2. 前端 state 要存 list ID, 不要用 string list
-3. 用 terraform deploy
