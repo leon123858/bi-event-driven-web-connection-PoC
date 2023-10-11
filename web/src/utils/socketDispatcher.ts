@@ -14,6 +14,9 @@ const dispatcher = (message: string) => {
     case "updateTodoItem":
       emitter.emit("edit-item", data.data);
       break;
+    case "removeTodoItem":
+      emitter.emit("remove-item", data.data);
+      break;
     default:
       alert("Error: unknown message type " + data.type);
       break;

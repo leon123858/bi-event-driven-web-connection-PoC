@@ -98,3 +98,29 @@ export const editTodoItem = async (
       alert("Error: Please check your network connection, http request failed");
     });
 };
+
+export const removeTodoItem = async (
+  targetId: string,
+  channelId: string,
+  basicData: { listName: string; userName: string; httpUrl: string },
+  callback: () => void
+) => {
+  const data = {
+    id: targetId,
+    channelId: channelId,
+    userId: basicData.userName,
+  };
+  await fetch(`${basicData.httpUrl}/delete-todolist-topic`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  })
+    .then((response) => response.json())
+    .then((_) => callback())
+    .catch((error) => {
+      console.error("Error:", error);
+      alert("Error: Please check your network connection, http request failed");
+    });
+};

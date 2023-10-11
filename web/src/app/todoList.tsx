@@ -9,6 +9,7 @@ import {
   addTodoItem,
   editTodoItem,
   getTodoList,
+  removeTodoItem,
 } from "@/utils/httpRequester";
 import useConfigHook from "@/utils/configHook";
 import {
@@ -39,16 +40,17 @@ export default function TodoList() {
   } = useConfigHook(defaultProp);
 
   listener("get-item", (data: TodoItem[]) => {
-    setList([
-      ...data.map((v) => {
-        return {
-          Completed: v.Completed,
-          Description: v.Description,
-          ID: v.ID,
-          Name: v.Name,
-        };
-      }),
-    ]);
+    if (data)
+      setList([
+        ...data.map((v) => {
+          return {
+            Completed: v.Completed,
+            Description: v.Description,
+            ID: v.ID,
+            Name: v.Name,
+          };
+        }),
+      ]);
   });
 
   const { sendJsonMessage } = useWebSocket(socketUrl, {
@@ -148,46 +150,80 @@ export default function TodoList() {
           bordered
           dataSource={list}
           renderItem={(item) => (
-            <List.Item
-              style={{ color: "wheat", border: "1px solid gray" }}
-              onClick={async () => {
-                await editTodoItem(
-                  item.ID,
-                  channelId,
-                  basicData,
-                  item.Description,
-                  !item.Completed,
-                  async () => {
-                    setList([
-                      ...list.map((v) => {
-                        if (v.ID === item.ID) {
-                          v.Completed = !item.Completed;
-                        }
-                        return v;
-                      }),
-                    ]);
-                    listenerWithTimeout(
-                      "edit-item",
-                      () => {
-                        setList([
-                          ...list.map((v) => {
-                            if (v.ID === item.ID) {
-                              v.Completed = !v.Completed;
+            <List.Item style={{ color: "wheat", border: "1px solid gray" }}>
+              <List.Item.Meta
+                avatar={
+                  <Checkbox
+                    checked={item.Completed}
+                    onClick={async () => {
+                      await editTodoItem(
+                        item.ID,
+                        channelId,
+                        basicData,
+                        item.Description,
+                        !item.Completed,
+                        async () => {
+                          setList([
+                            ...list.map((v) => {
+                              if (v.ID === item.ID) {
+                                v.Completed = !item.Completed;
+                              }
+                              return v;
+                            }),
+                          ]);
+                          listenerWithTimeout(
+                            "edit-item",
+                            () => {
+                              setList([
+                                ...list.map((v) => {
+                                  if (v.ID === item.ID) {
+                                    v.Completed = !v.Completed;
+                                  }
+                                  return v;
+                                }),
+                              ]);
+                              console.error("edit item timeout");
+                            },
+                            () => {
+                              console.log("edit item success");
                             }
-                            return v;
-                          }),
-                        ]);
-                        console.error("edit item timeout");
-                      },
-                      () => {
-                        console.log("edit item success");
-                      }
-                    );
-                  }
-                );
-              }}
-            >
-              <Checkbox checked={item.Completed}></Checkbox> {item.Description}
+                          );
+                        }
+                      );
+                    }}
+                  ></Checkbox>
+                }
+                title={<p style={{ color: "wheat" }}>{item.Description}</p>}
+                description={
+                  <Button
+                    onClick={async () => {
+                      await removeTodoItem(
+                        item.ID,
+                        channelId,
+                        basicData,
+                        () => {
+                          const originList = [...list];
+                          setList([...list.filter((v) => v.ID !== item.ID)]);
+                          listenerWithTimeout(
+                            "remove-item",
+                            () => {
+                              setList(originList);
+                              console.error("remove item timeout");
+                            },
+                            () => {
+                              console.log("remove item success");
+                            }
+                          );
+                        }
+                      );
+                    }}
+                    type="text"
+                    style={{ color: "red", border: "1px red solid" }}
+                  >
+                    Delete
+                  </Button>
+                }
+              />
             </List.Item>
           )}
         />
